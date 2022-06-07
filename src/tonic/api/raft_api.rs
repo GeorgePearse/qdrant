@@ -41,10 +41,7 @@ impl Raft for RaftService {
         &self,
         request: tonic::Request<PeerId>,
     ) -> Result<tonic::Response<UriStr>, tonic::Status> {
-        let addresses = self
-            .toc
-            .peer_address_by_id()
-            .map_err(|err| Status::internal(format!("Can't get peer addresses: {err}")))?;
+        let addresses = self.toc.peer_address_by_id();
         let uri = addresses
             .get(&request.get_ref().id)
             .ok_or_else(|| Status::internal("Peer not found"))?;
@@ -77,10 +74,7 @@ impl Raft for RaftService {
             .propose_consensus_op(ConsensusOperations::AddPeer(peer.id, uri), None)
             .await
             .map_err(|err| Status::internal(format!("Failed to add peer: {err}")))?;
-        let addresses = self
-            .toc
-            .peer_address_by_id()
-            .map_err(|err| Status::internal(format!("Can't get peer addresses: {err}")))?;
+        let addresses = self.toc.peer_address_by_id();
         Ok(Response::new(AllPeers {
             all_peers: addresses
                 .into_iter()

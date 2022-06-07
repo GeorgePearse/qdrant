@@ -15,6 +15,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use storage::content_manager::toc::TableOfContent;
+use storage::Dispatcher;
 use tokio::{runtime, signal};
 use tonic::{transport::Server, Request, Response, Status};
 
@@ -31,7 +32,7 @@ impl Qdrant for QdrantService {
     }
 }
 
-pub fn init(toc: Arc<TableOfContent>, host: String, grpc_port: u16) -> std::io::Result<()> {
+pub fn init(dispatcher: Arc<Dispatcher>, host: String, grpc_port: u16) -> std::io::Result<()> {
     let tonic_runtime = runtime::Builder::new_multi_thread()
         .enable_io()
         .enable_time()
@@ -46,8 +47,8 @@ pub fn init(toc: Arc<TableOfContent>, host: String, grpc_port: u16) -> std::io::
             let socket = SocketAddr::from((host.parse::<IpAddr>().unwrap(), grpc_port));
 
             let service = QdrantService::default();
-            let collections_service = CollectionsService::new(toc.clone());
-            let points_service = PointsService::new(toc.clone());
+            let collections_service = CollectionsService::new(dispatcher.clone());
+            let points_service = PointsService::new(dispatcher.toc().clone());
 
             log::info!("Qdrant gRPC listening on {}", grpc_port);
 
