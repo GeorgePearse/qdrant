@@ -267,6 +267,7 @@ impl Consensus {
             }
         }
         if let Some(ss) = ready.ss() {
+            log::info!("Changing soft state. New soft state: {ss:?}");
             self.handle_soft_state(ss);
         }
         if !ready.persisted_messages().is_empty() {
@@ -277,7 +278,7 @@ impl Consensus {
                 &self.bootstrap_uri,
                 &self.config,
             ) {
-                log::error!("Failed to send messages: {err}")
+                log::error!("Failed to send persisted messages: {err}")
             }
         }
 
@@ -391,6 +392,7 @@ async fn who_is(
     bootstrap_uri: Option<Uri>,
     config: Arc<ConsensusConfig>,
 ) -> anyhow::Result<Uri> {
+    log::info!("who_is {}", peer_id);
     let bootstrap_uri =
         bootstrap_uri.ok_or_else(|| anyhow::anyhow!("No bootstrap uri supplied"))?;
     let bootstrap_timeout = Duration::from_secs(config.bootstrap_timeout_sec);
